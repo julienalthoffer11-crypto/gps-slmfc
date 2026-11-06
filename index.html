@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>GPS Joueurs</title>
+<meta name="description" content="Saint-Lô Manche FC – mes données GPS">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0e142e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GPS SLM">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f7; --surface:#ffffff; --surface-2:#e3e8f2; --ink:#0e142e; --ink-2:#434b66; --ink-3:#666f8a;
+  --line:#d9dfeb; --axis:#b4bcd0; --accent:#172447; --accent-soft:#e0e6f4; --on-accent:#ffffff;
+  --s1:#1f4ba0; --s2:#eb6834; --err:#a82626; --err-bg:#fbdfdd;
+  --club:#0e142e; --club-2:#172447; --on-club:#ffffff; --on-club-2:#c6cde2; --club-line:#2b3760;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1126; --surface:#141c3a; --surface-2:#1e2849; --ink:#f3f5fb; --ink-2:#c2c9dd; --ink-3:#939cb6;
+  --line:#28325a; --axis:#3d4870; --accent:#a9c0f5; --accent-soft:#222f5c; --on-accent:#0e142e;
+  --s1:#5f8fea; --s2:#e0632f; --err:#f39a95; --err-bg:#44191d; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0b1126; --surface:#141c3a; --surface-2:#1e2849; --ink:#f3f5fb; --ink-2:#c2c9dd; --ink-3:#939cb6;
+  --line:#28325a; --axis:#3d4870; --accent:#a9c0f5; --accent-soft:#222f5c; --on-accent:#0e142e;
+  --s1:#5f8fea; --s2:#e0632f; --err:#f39a95; --err-bg:#44191d; color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);min-height:100vh;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+
+/* En-tête */
+.top{background:var(--club);color:var(--on-club);padding:calc(env(safe-area-inset-top) + 14px) 16px 18px;position:relative}
+.top .row{display:flex;align-items:center;gap:12px;max-width:640px;margin:0 auto}
+.top img{height:44px;width:auto;flex:none}
+.top h1{font:700 26px/1.05 var(--display);letter-spacing:.01em;text-transform:uppercase}
+.top p{color:var(--on-club-2);font-size:13px}
+.top .who{flex:1;min-width:0}
+.top .who h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+main{max-width:640px;margin:0 auto;padding:14px 16px calc(env(safe-area-inset-bottom) + 28px)}
+h2{font:700 19px/1.2 var(--display);text-transform:uppercase;letter-spacing:.02em;margin:22px 2px 10px;color:var(--ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+
+/* Connexion */
+.login{max-width:420px;margin:28px auto 0;text-align:center}
+.login .card{padding:22px 18px;text-align:left}
+.login h2{margin:0 0 6px}
+.login p{color:var(--ink-2);font-size:14px;margin-bottom:14px}
+.login label{display:block;font-weight:600;font-size:13px;color:var(--ink-2);margin-bottom:6px}
+.login input{width:100%;font:600 20px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;padding:13px 12px;border:1.5px solid var(--axis);border-radius:10px;background:var(--surface);color:var(--ink)}
+.login input:focus{outline:2px solid var(--s1);outline-offset:1px;border-color:var(--s1)}
+.btn{display:block;width:100%;margin-top:14px;padding:13px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px}
+.btn[disabled]{opacity:.6}
+.msg{margin-top:12px;font-size:14px;padding:10px 12px;border-radius:10px;background:var(--err-bg);color:var(--err)}
+.hint{color:var(--ink-3);font-size:13px;margin-top:14px;text-align:center}
+
+/* Filtres */
+.seg{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;padding:8px 6px;border-radius:9px;font-weight:600;font-size:14px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+/* Dernière séance */
+.last .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+.last .date{font:700 22px/1.1 var(--display);text-transform:uppercase}
+.last .sub{color:var(--ink-3);font-size:13px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.badge.m{background:var(--accent);color:var(--on-accent)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--bg);border-radius:10px;padding:10px 11px}
+.tile .k{font-size:12px;color:var(--ink-3);font-weight:600}
+.tile .v{font:700 26px/1.1 var(--display)}
+.tile .v small{font:600 13px var(--body);color:var(--ink-3);margin-left:3px}
+.tile .d{font-size:12px;color:var(--ink-2)}
+
+/* Saison */
+.season{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.season .tile .v{font-size:22px}
+
+/* Graphique */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:0 -16px 10px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:13px;font-weight:600;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .legend{display:flex;gap:14px;font-size:12px;color:var(--ink-2);margin-top:8px}
+.chart .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--s1);margin-right:5px;vertical-align:-1px}
+.chart .legend i.t{height:2px;width:14px;border-radius:1px;background:var(--ink);vertical-align:3px}
+.chart .tip{min-height:20px;font-size:13px;color:var(--ink-2);margin-top:6px}
+.chart .tip b{color:var(--ink)}
+.empty{color:var(--ink-3);font-size:14px;padding:6px 2px}
+
+/* Liste */
+.week{font-size:12px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin:16px 2px 6px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.item>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px}
+.item .l{flex:1;min-width:0}
+.item .l b{display:block;font-weight:700}
+.item .l span{display:block;color:var(--ink-3);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .r{text-align:right;font-weight:700}
+.item .r span{display:block;font-weight:500;color:var(--ink-3);font-size:12px}
+.item .car{color:var(--ink-3);transition:transform .15s;flex:none}
+.item[open] .car{transform:rotate(90deg)}
+.det{border-top:1px solid var(--line);padding:4px 12px 10px}
+.det table{width:100%;border-collapse:collapse;font-size:14px}
+.det th{text-align:right;font-size:12px;color:var(--ink-3);font-weight:600;padding:8px 0 4px}
+.det th:first-child,.det td:first-child{text-align:left}
+.det td{text-align:right;padding:6px 0;border-top:1px solid var(--line)}
+.det td:first-child{color:var(--ink-2)}
+.det td:nth-child(2){font-weight:700}
+.det .note{font-size:12px;color:var(--ink-3);margin-top:6px}
+
+.foot{margin-top:26px;display:flex;flex-direction:column;gap:10px;align-items:center;color:var(--ink-3);font-size:13px;text-align:center}
+.link{color:var(--s1);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.install{background:var(--accent-soft);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:14px;margin-top:14px;display:flex;gap:10px;align-items:flex-start}
+.install b{display:block}
+.install .x{margin-left:auto;color:var(--ink-3);font-size:20px;line-height:1;padding:0 2px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row">
+    <img src="icons/logo.png" alt="Saint-Lô Manche FC">
+    <div class="who"><h1 id="title">Mes données GPS</h1><p id="subtitle">Saint-Lô Manche FC · National 2</p></div>
+  </div>
+</header>
+
+<main>
+  <section id="login" class="login hidden">
+    <div class="card">
+      <h2>Connexion</h2>
+      <p>Entre le code personnel donné par le staff. Tu ne verras que tes propres données.</p>
+      <form id="form" autocomplete="off">
+        <label for="code">Mon code</label>
+        <input id="code" inputmode="text" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="XXXXX-XXXXX" maxlength="14" required>
+        <button class="btn" id="go" type="submit">Voir mes données</button>
+      </form>
+      <div id="err" class="msg hidden" role="alert"></div>
+    </div>
+    <p class="hint">Code perdu ? Demande-le au préparateur physique.</p>
+  </section>
+
+  <section id="loading" class="login"><p class="hint">Chargement…</p></section>
+
+  <section id="app" class="hidden">
+    <div id="install" class="install hidden"></div>
+    <div class="seg" role="group" aria-label="Type">
+      <button type="button" data-f="all" aria-pressed="true">Tout</button>
+      <button type="button" data-f="M" aria-pressed="false">Matchs</button>
+      <button type="button" data-f="E" aria-pressed="false">Entraînements</button>
+    </div>
+
+    <h2 id="lastTitle">Dernière séance</h2>
+    <div id="last" class="card last"></div>
+
+    <h2>Ma saison</h2>
+    <div id="season" class="season"></div>
+
+    <h2>Évolution</h2>
+    <div class="chips" id="metrics" role="group" aria-label="Donnée affichée"></div>
+    <div class="card chart">
+      <div id="chart"></div>
+      <div class="legend"><span><i></i>Moi</span><span><i class="t"></i>Moyenne équipe</span></div>
+      <div class="tip num" id="tip">Touchez une barre pour voir le détail.</div>
+    </div>
+
+    <h2>Toutes mes données</h2>
+    <div id="list"></div>
+
+    <div class="foot">
+      <span id="updated"></span>
+      <button type="button" class="link" id="logout">Changer de joueur</button>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const SALT = 'slmfc-gps-joueurs-v1', ITER = 310000; // identiques dans joueurs.py
+const LABELS = ['Durée','Distance totale','Distance / min','Haute intensité (Z4)','Sprint (Z5)','Player Load','Vitesse max','Accél. > 3 m/s²','Décél. > 3 m/s²','Accél. > 4 m/s²','Décél. > 4 m/s²'];
+const UNITS  = ['min','m','m/min','m','m','','km/h','','','',''];
+const DEC    = [0,0,1,0,0,0,1,0,0,0,0];
+const CHART  = [1,2,3,4,6,7,8,5];   // données proposées dans le graphique
+const TILES  = [1,2,3,4,6,7];        // tuiles de la dernière séance
+const $ = id => document.getElementById(id);
+const nf = (v, d=0) => v == null || isNaN(v) ? '–' : Number(v).toLocaleString('fr-FR', {minimumFractionDigits:d, maximumFractionDigits:d});
+const fmtDate = (t, o) => new Date(t).toLocaleDateString('fr-FR', Object.assign({timeZone:'UTC'}, o));
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const S = {data:null, filter:'all', metric:1, code:null, sel:null};
+
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs){ if (k === 'class') e.className = attrs[k]; else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]); else e.setAttribute(k, attrs[k]); }
+  for (const c of kids.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(c));
+  return e;
+}
+function show(id){ for (const s of ['login','loading','app']) $(s).classList.toggle('hidden', s !== id); }
+const cleanCode = s => { const c = String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); return c.length === 10 ? c.slice(0,5) + '-' + c.slice(5) : null; };
+const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function derive(code){
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
+  const bits = new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt:new TextEncoder().encode(SALT), iterations:ITER}, base, 384));
+  const id = [...bits.slice(0,16)].map(b => b.toString(16).padStart(2,'0')).join('');
+  const key = await crypto.subtle.importKey('raw', bits.slice(16), 'AES-GCM', false, ['decrypt']);
+  return {id, key};
+}
+async function load(code){
+  const {id, key} = await derive(code);
+  let res;
+  try { res = await fetch('d/' + id + '.json', {cache:'no-store'}); }
+  catch(e){ throw new Error('offline'); }
+  if (res.status === 404) throw new Error('unknown');
+  if (!res.ok) throw new Error('server');
+  const f = await res.json();
+  const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64(f.iv)}, key, b64(f.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
+async function start(code, fromForm){
+  if (!fromForm) show('loading');
+  try {
+    const d = await load(code);
+    S.code = code; S.data = d; store.set('gpsCode', code); store.set('gpsCache', JSON.stringify(d));
+    render(); show('app');
+  } catch(e){
+    const cached = store.get('gpsCache');
+    if (e.message === 'offline' && cached && code === store.get('gpsCode')){
+      S.code = code; S.data = JSON.parse(cached); render(); show('app');
+      $('updated').textContent += ' · hors ligne';
+      return;
+    }
+    if (e.message === 'unknown' || e.name === 'OperationError'){ store.del('gpsCode'); store.del('gpsCache'); }
+    show('login');
+    const m = {unknown:'Code inconnu. Vérifie-le ou demande-le au staff.', offline:'Pas de connexion internet. Réessaie dans un instant.'}[e.message] || 'Impossible de charger les données. Réessaie plus tard.';
+    $('err').textContent = m; $('err').classList.remove('hidden');
+  }
+}
+
+/* ---------- Rendu ---------- */
+const rowsF = () => S.data.rows.filter(r => S.filter === 'all' || r[2] === S.filter);
+const typeName = r => r[2] === 'M' ? 'Match' : r[2] === 'E' ? 'Entraînement' : 'Séance';
+function delta(me, team){
+  if (me == null || !team) return '';
+  const p = Math.round((me - team) / team * 100);
+  if (p === 0) return '= moyenne équipe';
+  return (p > 0 ? '▲ +' : '▼ ') + p + ' % vs équipe';
+}
+
+function render(){
+  const d = S.data;
+  $('title').textContent = d.n;
+  $('subtitle').textContent = 'Mes données GPS · Saint-Lô Manche FC';
+  document.title = 'GPS · ' + d.n;
+  $('updated').textContent = 'Données mises à jour le ' + new Date(d.gen).toLocaleDateString('fr-FR', {day:'numeric', month:'long'}) + ' à ' + new Date(d.gen).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === S.filter)));
+  renderLast(); renderSeason(); renderMetrics(); renderChart(); renderList(); renderInstall();
+}
+
+function renderLast(){
+  const rs = rowsF(), box = $('last');
+  $('lastTitle').textContent = S.filter === 'M' ? 'Dernier match' : S.filter === 'E' ? 'Dernier entraînement' : 'Dernière séance';
+  box.replaceChildren();
+  if (!rs.length){ box.append(el('p', {class:'empty'}, 'Aucune donnée pour le moment.')); return; }
+  const r = rs[rs.length - 1];
+  box.append(
+    el('div', {class:'head'},
+      el('div', null, el('div', {class:'date'}, fmtDate(r[1], {weekday:'long', day:'numeric', month:'long'})), el('div', {class:'sub'}, [r[3], r[4][0] != null ? nf(r[4][0]) + ' min' : null].filter(Boolean).join(' · '))),
+      el('span', {class:'badge' + (r[2] === 'M' ? ' m' : '')}, typeName(r))),
+    el('div', {class:'tiles'}, TILES.map(i => el('div', {class:'tile'},
+      el('div', {class:'k'}, LABELS[i]),
+      el('div', {class:'v num'}, nf(r[4][i], DEC[i]), UNITS[i] ? el('small', null, UNITS[i]) : null),
+      el('div', {class:'d num'}, r[6] > 1 ? delta(r[4][i], r[5][i]) : ''))))
+  );
+}
+
+function renderSeason(){
+  const rs = rowsF(), box = $('season');
+  const avg = i => { const v = rs.map(r => r[4][i]).filter(x => x != null); return v.length ? v.reduce((a,b) => a+b, 0) / v.length : null; };
+  const mx = i => { const v = rs.map(r => r[4][i]).filter(x => x != null); return v.length ? Math.max(...v) : null; };
+  const days = new Set(rs.map(r => r[1] + r[2])).size;
+  const word = S.filter === 'M' ? 'matchs' : S.filter === 'E' ? 'entraînements' : 'séances';
+  const t = (k, v, u) => el('div', {class:'tile'}, el('div', {class:'k'}, k), el('div', {class:'v num'}, v, u ? el('small', null, u) : null));
+  box.replaceChildren(
+    t(word.charAt(0).toUpperCase() + word.slice(1), nf(days)),
+    t('Distance moy.', nf(avg(1)), 'm'),
+    t('Vitesse max', nf(mx(6), 1), 'km/h'),
+    t('m/min moy.', nf(avg(2), 1)),
+    t('HSR moy.', nf(avg(3)), 'm'),
+    t('Sprint moy.', nf(avg(4)), 'm'));
+}
+
+function renderMetrics(){
+  const box = $('metrics');
+  box.replaceChildren(...CHART.map(i => el('button', {type:'button', class:'chip', 'aria-pressed':String(i === S.metric), onclick:() => { S.metric = i; S.sel = null; renderMetrics(); renderChart(); }}, LABELS[i])));
+}
+
+function renderChart(){
+  const rs = rowsF().filter(r => r[4][S.metric] != null).slice(-14), box = $('chart'), i = S.metric;
+  box.replaceChildren(); $('tip').textContent = 'Touchez une barre pour voir le détail.';
+  if (!rs.length){ box.append(el('p', {class:'empty'}, 'Pas de donnée à afficher.')); return; }
+  const W = 340, H = 190, L = 34, R = 4, T = 10, B = 26, n = rs.length;
+  const max = Math.max(...rs.map(r => Math.max(r[4][i], r[5][i] || 0))) * 1.08 || 1;
+  const step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const slot = (W - L - R) / n, bw = Math.max(6, Math.min(22, slot * .62));
+  const ns = 'http://www.w3.org/2000/svg';
+  const s = (tag, a) => { const e = document.createElementNS(ns, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const svg = s('svg', {viewBox:`0 0 ${W} ${H}`, role:'img', 'aria-label':LABELS[i] + ' – mes ' + n + ' dernières séances'});
+  for (let v = 0; v <= top + 1e-9; v += step){
+    svg.append(s('line', {x1:L, x2:W - R, y1:y(v), y2:y(v), stroke:'var(--line)', 'stroke-width':1}));
+    const t = s('text', {x:L - 6, y:y(v) + 4, 'text-anchor':'end', 'font-size':10, fill:'var(--ink-3)'}); t.textContent = shortNum(v); svg.append(t);
+  }
+  rs.forEach((r, k) => {
+    const cx = L + slot * (k + .5), v = r[4][i], top0 = y(v), h = y(0) - top0;
+    const g = s('g', {class:'bar', tabindex:0, role:'button', 'aria-label':fmtDate(r[1], {day:'numeric', month:'short'}) + ' : ' + nf(v, DEC[i])});
+    const rad = Math.min(4, bw / 2, h);
+    g.append(s('path', {d:`M${cx - bw/2},${y(0)} V${top0 + rad} Q${cx - bw/2},${top0} ${cx - bw/2 + rad},${top0} H${cx + bw/2 - rad} Q${cx + bw/2},${top0} ${cx + bw/2},${top0 + rad} V${y(0)} Z`,
+      fill:'var(--s1)', opacity: S.sel == null || S.sel === k ? 1 : .45}));
+    if (r[5][i] != null && r[6] > 1) g.append(s('line', {x1:cx - bw/2 - 3, x2:cx + bw/2 + 3, y1:y(r[5][i]), y2:y(r[5][i]), stroke:'var(--ink)', 'stroke-width':2, 'stroke-linecap':'round'}));
+    g.append(s('rect', {x:cx - slot/2, y:T, width:slot, height:H - T - B + 4, fill:'transparent'}));
+    const pick = () => { S.sel = k; renderChart(); tip(r); };
+    g.addEventListener('click', pick); g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    svg.append(g);
+    if (n <= 8 || k % Math.ceil(n / 7) === (n - 1) % Math.ceil(n / 7)){
+      const t = s('text', {x:cx, y:H - 8, 'text-anchor':'middle', 'font-size':10, fill:'var(--ink-3)'});
+      t.textContent = fmtDate(r[1], {day:'2-digit', month:'2-digit'}); svg.append(t);
+    }
+  });
+  svg.append(s('line', {x1:L, x2:W - R, y1:y(0), y2:y(0), stroke:'var(--axis)', 'stroke-width':1}));
+  box.append(svg);
+  if (S.sel != null && rs[S.sel]) tip(rs[S.sel]);
+}
+function tip(r){
+  const i = S.metric, t = $('tip');
+  t.replaceChildren(fmtDate(r[1], {weekday:'short', day:'numeric', month:'short'}) + ' · ' + typeName(r) + ' — ', el('b', null, nf(r[4][i], DEC[i]) + (UNITS[i] ? ' ' + UNITS[i] : '')),
+    r[5][i] != null && r[6] > 1 ? ' · équipe ' + nf(r[5][i], DEC[i]) : '');
+}
+function niceStep(x){ const p = Math.pow(10, Math.floor(Math.log10(x))), f = x / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+function shortNum(v){ return v >= 10000 ? nf(v / 1000) + 'k' : v >= 1000 ? nf(v / 1000, v % 1000 ? 1 : 0) + 'k' : nf(v); }
+
+function renderList(){
+  const rs = rowsF().slice().reverse(), box = $('list');
+  box.replaceChildren();
+  if (!rs.length){ box.append(el('p', {class:'empty'}, 'Aucune donnée.')); return; }
+  let wk = null;
+  for (const r of rs){
+    if (r[0] !== wk){ wk = r[0]; box.append(el('div', {class:'week'}, 'Semaine ' + (wk.split('-')[0].replace(/^S/, '') || '–'))); }
+    const item = el('div', {class:'item'});
+    const det = el('div', {class:'det hidden'},
+      el('table', {class:'num'},
+        el('thead', null, el('tr', null, el('th', null, 'Donnée'), el('th', null, 'Moi'), el('th', null, r[6] > 1 ? 'Moy. équipe' : ''))),
+        el('tbody', null, LABELS.map((lab, i) => el('tr', null, el('td', null, lab + (UNITS[i] ? ' (' + UNITS[i] + ')' : '')), el('td', null, nf(r[4][i], DEC[i])), el('td', null, r[6] > 1 ? nf(r[5][i], DEC[i]) : ''))))),
+      r[6] > 1 ? el('p', {class:'note'}, 'Moyenne des ' + r[6] + ' joueurs équipés sur cette séance.') : null);
+    const btn = el('button', {type:'button', 'aria-expanded':'false', onclick:() => {
+        const open = det.classList.toggle('hidden') === false; item.toggleAttribute('open', open); btn.setAttribute('aria-expanded', String(open)); }},
+      el('span', {class:'badge' + (r[2] === 'M' ? ' m' : '')}, r[2] === 'M' ? 'Match' : 'Entr.'),
+      el('div', {class:'l'}, el('b', null, fmtDate(r[1], {weekday:'long', day:'numeric', month:'short'})), el('span', null, r[3] || typeName(r))),
+      el('div', {class:'r num'}, nf(r[4][1]) + ' m', el('span', null, nf(r[4][2], 1) + ' m/min')),
+      el('span', {class:'car', 'aria-hidden':'true'}, '›'));
+    item.append(btn, det); box.append(item);
+  }
+}
+
+function renderInstall(){
+  const box = $('install');
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  if (standalone || store.get('gpsInstallHidden')){ box.classList.add('hidden'); return; }
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  box.replaceChildren(
+    el('div', null, el('b', null, 'Ajoute l’appli à ton écran d’accueil'),
+      ios ? 'Dans Safari : bouton Partager (carré avec flèche) puis « Sur l’écran d’accueil ».' : 'Dans Chrome : menu ⋮ puis « Ajouter à l’écran d’accueil » ou « Installer l’application ».'),
+    el('button', {type:'button', class:'x', 'aria-label':'Masquer', onclick:() => { store.set('gpsInstallHidden', '1'); box.classList.add('hidden'); }}, '×'));
+  box.classList.remove('hidden');
+}
+
+/* ---------- Événements ---------- */
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { S.filter = b.dataset.f; S.sel = null; render(); }));
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const c = cleanCode($('code').value);
+  $('err').classList.add('hidden');
+  if (!c){ $('err').textContent = 'Le code contient 10 caractères (ex. ABCDE-23456).'; $('err').classList.remove('hidden'); return; }
+  $('go').disabled = true; $('go').textContent = 'Vérification…';
+  await start(c, true);
+  $('go').disabled = false; $('go').textContent = 'Voir mes données';
+});
+$('logout').addEventListener('click', () => {
+  store.del('gpsCode'); store.del('gpsCache'); S.data = null; $('code').value = '';
+  if (location.hash) history.replaceState(null, '', location.pathname);
+  $('err').classList.add('hidden'); show('login');
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.code) load(S.code).then(d => { if (d.gen !== S.data.gen){ S.data = d; store.set('gpsCache', JSON.stringify(d)); render(); } }).catch(() => {}); });
+
+(function init(){
+  const m = location.hash.match(/c=([A-Za-z0-9-]+)/);
+  const c = (m && cleanCode(m[1])) || cleanCode(store.get('gpsCode'));
+  if (!window.crypto || !crypto.subtle){ show('login'); $('err').textContent = 'Ouvre ce lien dans Safari ou Chrome à jour.'; $('err').classList.remove('hidden'); return; }
+  if (c) start(c); else show('login');
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
